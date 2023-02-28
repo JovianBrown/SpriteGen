@@ -13,11 +13,12 @@
 </head>
 <body>
     <h1 class = "title">SpriteGen</h1>
+    <p>a Pixel Art creator made in Javascript.</p>
     <div id = "main-div">
         <div id = "tool-div">
             <div id = "color-selector-div">
                  <h3>Color</h3> 
-                 <input type="color" value="#ff0000" id = "color-selector"/>
+                 <input type="color" value="#F65627" id = "color-selector"/>
 
             </div>
             <div id = "tool-selector-div">
@@ -31,7 +32,7 @@
            <div id = "width-selector-div">
                <h3 id = "width-heading">Brush Width</h3>
 
-               <input name = "slide" type="range" min="1" max="30" value="1" class="slider" id="width-slider">
+               <input name = "slide" type="range" min="1" max="16" value="1" class="slider" id="width-slider">
                <text id = "width-slider-text"></text>
                </select>
            </div>
@@ -45,7 +46,6 @@
 
     </div>
     <div class = "canvas-controls">
-       
         <div class="slide-container">
             <h3 id = "res-heading">Canvas Resolution</h3>
 
@@ -57,6 +57,9 @@
             <input name = "canvas-slider" type="range" min="32" max="512" value="500" step = "16" class="slider" id="canvas-size-slider">
             <text id = "canvas-size-text"></text>
         </div>
+    </div>
+    <div class = "footer">
+        Created by <a href = "github.com/JovianBrown">Jovian Brown</a> 2023.
     </div>
 </body>
 </html>

@@ -1,3 +1,5 @@
+
+
 var paint = false;
 class Canvas {
     constructor(pixelWidth,pixelHeight,width,height,brushSize) {
@@ -12,10 +14,11 @@ class Canvas {
         this.mainDiv = document.getElementById("main-div");
         this.mainDiv.style.maxHeight = this.pixelHeight*this.tilesY;
         this.brushSize = brushSize;
-        let pixelID = 0;
-        this.totalPixels = 0;
+        this.drawingObject = false; //is the user currently drawing an object?
+        this.objectStart = ""; //  object start and end determine where on the canvas
+        this.objectEnd = "";   // the object will be drawn
         let rowID = 0;
-        this.canvasDiv.addEventListener("mouseleave",function() { //when user moves off canvas 
+        this.canvasDiv.addEventListener("mouseleave",function() { //when user moves off canvas
             paint = false;                                        //turn paint off
         },false);
         for(let i = 0; i < this.tilesX; i++)
@@ -28,18 +31,16 @@ class Canvas {
             for(let j = 0; j < this.tilesY; j++)
             {
                 const column = document.createElement('div');
-                column.className="column-div"; 
-                column.id = pixelID; //each pixel will get an id so we can located it later
+                column.className="column-div";
+                column.id = i+" "+j; //this id will help keep track of x and y coordinates
+               // console.log("x:y"+i+":"+j)
                 column.style.backgroundColor = "white";  //set initial color of pixel
                 column.style.width = this.pixelWidth+"px";
                 column.style.height = this.pixelHeight+"px";
                 column.addEventListener("mousedown",this.paintOn,false);
-                //column.addEventListener("touchmove",this.touchCanvas.bind(this,`${pixelID}`),{passive: true} );
-
-                column.addEventListener("mouseup",this.paintOff,false);
-                column.addEventListener("mouseover",this.touchCanvas.bind(this,`${pixelID}`),false);
+                column.addEventListener("mouseup",this.paintOff.bind(this,`${column.id}`),false);
+                column.addEventListener("mouseover",this.touchCanvas.bind(this,`${column.id}`),false);
                 row.appendChild(column);
-                pixelID++;
                 this.totalPixels++;
             }
         }
@@ -48,19 +49,47 @@ class Canvas {
     {
         return this.tilesX;
     }
+    drawSquare()
+    {
+
+        let startingPoint = this.objectStart.split(" ");  //get the previously stored strings
+        let startingPointX = parseInt(startingPoint[0]);  //parse the integers x,y from the string
+        let startingPointY = parseInt(startingPoint[1]);
+        let endingPoint = this.objectEnd.split(" ");
+        let endingPointX = parseInt(endingPoint[0]);
+        let endingPointY = parseInt(endingPoint[1]);
+        for(let i = startingPointX; i < endingPointX; i++)  //increment over the area of the rectangle 
+        { 
+            for(let j = startingPointY; j < endingPointY; j++)
+            {
+                let currentPixel = document.getElementById((i)+" "+(j));
+                    if(currentPixel)
+                    {
+                        currentPixel.style.backgroundColor = colorSelector.getCurrentColor();
+                    }
+            }
+        }
+        this.objectStart = "";
+        this.objectStart = "";
+    }
     touchCanvas(column)
     {
-        
+
         if(paint)
         {
             if(toolSelector.getCurrentTool() == "brush")
             {
+                const columnArray = column.split(" ");
+                let columnX = columnArray[0];
+                let columnY = columnArray[1];
+                let columnXNum = parseInt(columnX);
+                let columnYNum = parseInt(columnY);
                 for(let i = 0; i < this.brushSize; i++)
                 {
-                    let columnID = parseInt(column);
-                    if(columnID+i<this.totalPixels && columnID+i > 0)
+
+                    let currentPixel = document.getElementById((columnXNum+i)+" "+(columnYNum+i));
+                    if(currentPixel)
                     {
-                        let currentPixel = document.getElementById(columnID+i);
                         currentPixel.style.backgroundColor = colorSelector.getCurrentColor();
                     }
                 }
@@ -68,26 +97,48 @@ class Canvas {
             else if(toolSelector.getCurrentTool() == "bucket")
             {
                 this.fill();
-            
-            }   
-        }  
+            }
+            else if(toolSelector.getCurrentTool() == "square" && !this.drawingObject)
+            {
+                let currentPixel = document.getElementById(column);
+                if(currentPixel)
+                {
+                    this.drawingObject = true;
+                    this.objectStart = currentPixel.id;
+                }
+            }
+            else
+            {
+                let columnID = parseInt(column);
+
+            }
+        }
     }
     paintOn()
     {
         paint = true;
     }
-    paintOff()
+    paintOff(column)
     {
         paint = false;
+        if(this.drawingObject)
+        {
+            this.drawingObject = false;
+            this.objectEnd = column;
+            this.drawSquare();
+        }
     }
     fill()
     {
-        for(let i  = 0; i < this.totalPixels; i++)
+        for(let i  = 0; i < this.tilesX; i++)
         {
-            let currentDiv = document.getElementById(i);
-           currentDiv.style.backgroundColor = colorSelector.getCurrentColor();
+            for(let j  = 0; j < this.tilesY; j++)
+            {
+                let currentDiv = document.getElementById(i+" "+j);
+                currentDiv.style.backgroundColor = colorSelector.getCurrentColor();
+            }
         }
-           
+
     }
     destroyCanvas()
     {
@@ -99,19 +150,18 @@ class Canvas {
     }
     eraseCanvas()
     {
-        for(let i = 0; i < this.totalPixels; i++)
+        for(let i = 0; i < this.tilesX; i++)
         {
-            let currentDiv = document.getElementById(i);
-            currentDiv.style.backgroundColor = "white";
+            for(let j = 0; j<this.tilesY; j++)
+            {
+                let currentDiv = document.getElementById(j+" "+i);
+                currentDiv.style.backgroundColor = "white";
+            }
         }
     }
     setBrushSize(size)
     {
         this.brushSize = size;
-    }
-    paintTool()
-    {
-
     }
     eraseTool()
     {
